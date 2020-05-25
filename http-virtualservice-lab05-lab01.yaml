@@ -1,0 +1,20 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: lab05-virtualservice
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - http-gateway                      # 1
+  http:
+    - match:
+        - uri:
+            prefix: "/oauth"
+        # - uri:
+        #     prefix: "/login"
+      route:
+      - destination:
+          host: lab05
+          port:
+             number: 9999

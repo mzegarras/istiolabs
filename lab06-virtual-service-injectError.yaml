@@ -1,0 +1,70 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: lab06-virtual-services
+spec:
+  hosts:
+    - "*"
+  gateways:
+    - http-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /accounts
+      # timeout: 1s
+      retries:
+        attempts: 2 #number retrye
+        perTryTimeout: 2s #Timeout per retry
+        retryOn: 5xx
+        #Complete list: https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/router_filter#x-envoy-retry-on
+        ##gateway-error,connect-failure,refused-stream, retriable-4xx, 5xx
+          ##TCP
+          ##UH (no healthy upstream hosts); 
+          ##UF(upstream connection failure); 
+          ##UO (upstream overflow); 
+          ##NR (no route configured); 
+          ##URX (rejected because of upstream retry limit or maximum connection attempts reached).
+        ##HTTP requests
+          ##DC downstream connection termination
+          ##LH Local service failed health check request
+          ##UT Upstream request timeout
+          ##LRConnection local reset
+          ##URUpstream remote reset
+          ##UCUpstream connection termination
+          ##DIThe request processing was delayed for a period specified via fault injection. Note that Ambassador does not currently support fault injection.
+          ##FI The request was aborted with a response code specified via fault injection. Note that Ambassador does not currently support fault injection.
+          ##RL The request was ratelimited locally by the rate limiting filter.
+          ##UAEX The request was denied by the external authorization service.
+          ##RLSEThe request was rejected because there was an error in rate limit service.
+          ##IH The request was rejected because it set an invalid value for a strictly-checked header in addition to 400 response code.
+          ##SI Stream idle timeout in addition to 408 response code.
+        
+      route:
+        - destination:
+            host: lab06
+            subset: v1
+            port:
+              number: 7070
+          weight: 100
+          
+        - destination:
+            host: lab06
+            subset: v2
+            port:
+              number: 7070
+          weight: 0
+    
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: lab06
+spec:
+  host: lab06
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2

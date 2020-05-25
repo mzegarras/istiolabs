@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab05-v2
+spec:
+  selector:
+    matchLabels:
+      app: lab05
+      version: v2
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: lab05
+        version: v2
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"           
+    spec:
+      serviceAccountName: lab05
+      containers:
+        - name: lab05
+          image: mzegarra/lab05:0.0.2
+          readinessProbe:
+             httpGet:
+               path: /actuator/health
+               port: 9999
+             initialDelaySeconds: 35
+             periodSeconds: 10
+             timeoutSeconds: 10
+             successThreshold: 1
+             failureThreshold: 3
+          livenessProbe:
+             httpGet:
+               path: /actuator/health
+               port: 9999
+             initialDelaySeconds: 35
+             periodSeconds: 10
+             timeoutSeconds: 10
+             successThreshold: 1
+             failureThreshold: 3
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          ports:
+            - containerPort: 9999
+          envFrom:
+            - configMapRef:
+                name: ms-configurations
+          env:
+          - name: JAEGER_SERVICE_NAME #CHANGE
+            value: lab05-service
+          - name: JAEGER_AGENT_HOST
+            value: jaeger-agent.istio-system.svc.cluster.local
+          - name: JAEGER_REPORTER_LOG_SPANS
+            value: "true"
+          - name: JAEGER_SAMPLER_TYPE
+            value: const
+          - name: JAEGER_SAMPLER_PARAM
+            value: "1"
+          - name: JAEGER_PROPAGATION
+            value: b3

@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lab06apictaaho
+--- 
+apiVersion: v1
+kind: Service
+metadata:
+  name: lab06apictaaho
+  labels:
+    app: lab06apictaaho
+    service: lab06apictaaho
+spec:
+  ports:
+    - name: mocks
+      port: 7070
+      targetPort: 7070
+    - name: http
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: lab06apictaaho
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab06busctaahobus
+  labels:
+    app: lab06apictaaho
+    version: bus    
+spec:
+  selector:
+    matchLabels:
+      app: lab06apictaaho
+      version: bus
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: lab06apictaaho
+        version: bus
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+        sidecar.istio.io/statsInclusionPrefixes: cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grpc
+    spec:
+      serviceAccountName: lab06apictaaho
+      containers:
+        - name: lab06busctaaho
+          image: mzegarra/lab06busctaaho:0.0.2
+          imagePullPolicy: Always #IfNotPresent #Always
+          resources:
+            limits:
+              cpu: 700m
+              memory: 512Mi
+            requests:
+              cpu: 500m
+              memory: 256Mi
+          ports:
+            - containerPort: 8080
+            - containerPort: 7070
+          envFrom:
+            - configMapRef:
+                name: ms-configurations
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab06busctaahoace
+  labels:
+    version: ace
+spec:
+  selector:
+    matchLabels:
+      app: lab06apictaaho
+      version: ace
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+  template:
+    metadata:
+      labels:
+        app: lab06apictaaho
+        version: ace
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"
+        sidecar.istio.io/statsInclusionPrefixes: cluster.outbound,cluster_manager,listener_manager,http_mixer_filter,tcp_mixer_filter,server,cluster.xds-grpc
+    spec:
+      serviceAccountName: lab06apictaaho
+      containers:
+        - name: lab06busctaaho
+          image: mzegarra/lab06acectaaho:0.0.2
+          imagePullPolicy: IfNotPresent #Always
+          resources:
+            limits:
+              cpu: 500m
+              memory: 256Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          ports:
+            - containerPort: 8080
+            - containerPort: 7070
+          envFrom:
+            - configMapRef:
+                name: ms-configurations

@@ -1,0 +1,57 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: lab06apictaaho
+spec:
+  hosts:
+    - lab06apictaaho
+  http:
+    - match:
+        - uri:
+            prefix: /accounts
+      route:
+        - destination:
+            host: lab06apictaaho
+            subset: bus
+            port:
+              number: 7070
+        #   weight: 80
+        # - destination:
+        #     host: lab06apictaaho
+        #     subset: ace
+        #     port:
+        #       number: 7070
+        #   weight: 20
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: lab06apictaaho
+spec:
+  host: lab06apictaaho
+  subsets:
+    - name: bus
+      labels:
+        version: bus
+      trafficPolicy:
+        tls:
+          mode: ISTIO_MUTUAL  
+        # connectionPool:
+        #   # tcp:
+        #   #     maxConnections: 10
+        #   http:
+        #     http1MaxPendingRequests: 1 #The maximum number of pending requests to a destination.
+        #     maxRequestsPerConnection: 1 #The maximum number of requests in a cluster at any given time. Setting this to 1 disables keep-alive.
+        outlierDetection:
+          #consecutiveErrors: 1 #Number of 5xx or timeout errors before a host is ejected from the connection pool.
+          consecutive5xxErrors: 1
+          interval: 2s #Time interval between ejection sweep analysis.
+          baseEjectionTime: 60s #The minimum duration of time for which the host is ejected.
+          #maxEjectionPercent: 100 #The maximum percentage of the load-balancer pool containers that can be ejected at a time.
+          maxEjectionPercent: 100
+          minHealthPercent: 0 # <-- added this
+    # - name: ace
+    #   labels:
+    #     version: ace    
+
+##https://istio.io/docs/reference/config/networking/destination-rule/#OutlierDetection

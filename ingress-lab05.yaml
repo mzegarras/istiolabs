@@ -1,0 +1,34 @@
+#Service must ClusterIP or LoadBalancer
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: test-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: demo.example.com
+  - http:
+      paths:
+      - path: /oauth
+        backend:
+          serviceName: lab05
+          servicePort: 9999
+---
+# apiVersion: networking.k8s.io/v1beta1
+# kind: Ingress
+# metadata:
+#   name: test-ingress
+#   annotations:
+#     #nginx.ingress.kubernetes.io/rewrite-target: /
+#     nginx.ingress.kubernetes.io/rewrite-target: /$1
+#     kubernetes.io/ingress.class: "nginx"
+# spec:
+#   rules:
+#   - host: demo.example.com
+#   - http:
+#       paths:
+#       - path: /oauth
+#         backend:
+#           serviceName: lab05
+#           servicePort: 9999 

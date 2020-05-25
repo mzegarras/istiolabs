@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: lab06apictaaho
+spec:
+  hosts:
+    - lab06apictaaho
+  http:
+    - match:
+        - uri:
+            prefix: /accounts
+      route:
+        - destination:
+            host: lab06apictaaho
+            subset: bus
+            port:
+              number: 7070
+          weight: 80
+        - destination:
+            host: lab06apictaaho
+            subset: ace
+            port:
+              number: 7070
+          weight: 20
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: lab06apictaaho
+spec:
+  host: lab06apictaaho
+  subsets:
+    - name: bus
+      labels:
+        version: bus
+    - name: ace
+      labels:
+        version: ace

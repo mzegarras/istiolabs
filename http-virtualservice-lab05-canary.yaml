@@ -1,0 +1,43 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: lab05-virtualservice
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - http-gateway                      # 1
+  http:
+    - match:
+        - uri:
+            prefix: "/oauth"
+        - uri:
+            prefix: "/login"
+      route:
+      - destination:
+          host: lab05
+          subset: v1
+          port:
+            number: 9999
+        weight: 90
+      - destination:
+          host: lab05 # interpreted as lab05.default.svc.cluster.local
+          subset: v2
+          port:
+            number: 9999
+        weight: 10
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: lab05-destinationrule
+  namespace: default
+spec:
+  host: lab05 # interpreted as reviews.foo.svc.cluster.local
+  subsets:
+  - name: v1
+    labels:
+      version: v1
+  - name: v2
+    labels:
+      version: v2 

@@ -1,0 +1,26 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: lab01-virtual-services
+spec:
+  hosts:
+  - "api.demo.com.pe"
+  gateways:
+  - http-gateway                      # 1
+  http:
+    - match:
+        - uri:
+            prefix: /customers
+      route:
+        - destination:
+            host: lab01
+            port:
+              number: 7070
+    # - match:
+    #     - uri:
+    #         prefix: /correlations
+    #   route:
+    #     - destination:
+    #         host: lab02
+    #         port:
+    #           number: 7071

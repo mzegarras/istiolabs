@@ -1,0 +1,72 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: configserver
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: configserver
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/actuator/prometheus"           
+    spec:
+      containers:
+      - name: configserver
+        image: mzegarra/lab03sut
+        ports:
+          - containerPort: 8888
+        envFrom:
+          - configMapRef:
+              name: configserver-settings
+        env:
+        - name: JAEGER_SERVICE_NAME #CHANGE
+          value: lab03-service
+        - name: JAEGER_AGENT_HOST
+          value: jaeger-agent.istio-system.svc.cluster.local
+        - name: JAEGER_REPORTER_LOG_SPANS
+          value: "true"
+        - name: JAEGER_SAMPLER_TYPE
+          value: const
+        - name: JAEGER_SAMPLER_PARAM
+          value: "1"
+        - name: JAEGER_PROPAGATION
+          value: b3
+        volumeMounts:
+          - name: configserver-key
+            mountPath: /config-server.jks
+      volumes:
+        - name: configserver-key
+          secret:
+            secretName: configserver-key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: configserver
+  labels:
+    app: configserver
+spec:
+  ports:
+    - port: 8888
+      targetPort: 8888
+  selector:
+    app: configserver
+  type: ClusterIP
+  #type: LoadBalancer
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configserver-settings
+  labels:
+    app: configserver
+data:
+  GIT_URI: "https://github.com/mzegarras/tci-config-dev.git"
+  GIT_USER: "mzegarra"
+  GIT_PWD: "M0ssyUPC12@"
+  KEYSTORE_PWD: "YOU_KEYSTORE_PASSWORD"
+  KEYSTORE_ALIAS: "YOU_CONFIG_SERVER_KEY"
+  KEYSTORE_SECRET: "YOU_KEYSTORE_PASSWORD"
