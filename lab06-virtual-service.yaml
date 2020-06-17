@@ -1,31 +1,31 @@
-apiVersion: networking.istio.io/v1alpha3
+apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: lab06-virtual-services
+  name: lab06
 spec:
   hosts:
-    - "api.demo.com.pe"
+  - "*"
   gateways:
-    - http-gateway
+  - lab06-gateway
   http:
-    - match:
-        - uri:
-            prefix: /accounts
-      route:
-        - destination:
-            host: lab06
-            subset: v1
-            port:
-              number: 7070
-          weight: 100
-        - destination:
-            host: lab06
-            subset: v2
-            port:
-              number: 7070
-          weight: 0
+  - match:
+    - uri:
+        prefix: /accounts
+    route:
+      - destination:
+          host: lab06
+          subset: v1
+          port:
+            number: 7070
+        weight: 70
+      - destination:
+          host: lab06
+          subset: v2
+          port:
+            number: 7070
+        weight: 30
 ---
-apiVersion: networking.istio.io/v1alpha3
+apiVersion: networking.istio.io/v1beta1
 kind: DestinationRule
 metadata:
   name: lab06

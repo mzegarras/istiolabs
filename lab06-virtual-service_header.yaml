@@ -1,0 +1,64 @@
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: lab06
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - lab06-gateway
+  # http:
+  # - match:
+  #   - uri:
+  #       prefix: /accounts
+  #     headers:
+  #       x-version:
+  #         exact: v1        
+  #     ignoreUriCase: true
+  #   route:
+  #     - destination:
+  #         host: lab06
+  #         subset: v1
+  #         port:
+  #           number: 7070
+  #     - destination:
+  #         host: lab06
+  #         subset: v2
+  #         port:
+  #           number: 7070
+  http:
+  - match:
+    - headers:
+        x-version:
+          exact: v1
+      name: accounts-v1
+      uri:
+        prefix: /accounts
+    route:
+    - destination:
+        host: lab06
+        port:
+          number: 7070
+        subset: v1
+  - name: default
+    
+    route:
+    - destination:
+        host: lab06
+        port:
+          number: 7070
+        subset: v2     
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: lab06
+spec:
+  host: lab06
+  subsets:
+    - name: v1
+      labels:
+        version: v1
+    - name: v2
+      labels:
+        version: v2

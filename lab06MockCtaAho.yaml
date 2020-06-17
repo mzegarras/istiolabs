@@ -63,7 +63,7 @@ spec:
               cpu: 500m
               memory: 256Mi
           ports:
-            - containerPort: 8080
+            #- containerPort: 8080
             - containerPort: 7070
           envFrom:
             - configMapRef:
@@ -109,7 +109,7 @@ spec:
               cpu: 100m
               memory: 128Mi
           ports:
-            - containerPort: 8080
+            #- containerPort: 8080
             - containerPort: 7070
           envFrom:
             - configMapRef:

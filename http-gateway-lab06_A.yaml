@@ -1,8 +1,7 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: lab06-gateway
-  namespace: default
+  name: http-gateway
 spec:
   selector:
     istio: ingressgateway
